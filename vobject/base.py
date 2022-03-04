@@ -65,6 +65,7 @@ def to_basestring(s):
 
     return s.encode('utf-8')
 
+
 # ------------------------------------ Logging ---------------------------------
 logger = logging.getLogger(__name__)
 if not logging.getLogger().handlers:
@@ -103,6 +104,7 @@ class VBase(object):
 
     Current spec: 4.0 (http://tools.ietf.org/html/rfc6350)
     """
+
     def __init__(self, group=None, *args, **kwds):
         super(VBase, self).__init__(*args, **kwds)
         self.group = group
@@ -193,7 +195,8 @@ class VBase(object):
                     raise
                 else:
                     msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                    msg = msg.format(lineNumber, sys.exc_info()[
+                                     0], sys.exc_info()[1])
                     msg = msg + " (" + str(self_orig) + ")"
                     raise ParseError(msg, lineNumber)
 
@@ -222,7 +225,8 @@ class VBase(object):
                     raise
                 else:
                     msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                    msg = msg.format(lineNumber, sys.exc_info()[
+                                     0], sys.exc_info()[1])
                     raise NativeError(msg, lineNumber)
         else:
             return self
@@ -250,11 +254,13 @@ class VBase(object):
 
         if behavior:
             if DEBUG:
-                logger.debug("serializing {0!s} with behavior {1!s}".format(self.name, behavior))
+                logger.debug("serializing {0!s} with behavior {1!s}".format(
+                    self.name, behavior))
             return behavior.serialize(self, buf, lineLength, validate)
         else:
             if DEBUG:
-                logger.debug("serializing {0!s} without behavior".format(self.name))
+                logger.debug(
+                    "serializing {0!s} without behavior".format(self.name))
             return defaultSerialize(self, buf, lineLength)
 
 
@@ -296,6 +302,7 @@ class ContentLine(VBase):
     @ivar lineNumber:
         An optional line number associated with the contentline.
     """
+
     def __init__(self, name, params, value, group=None, encoded=False,
                  isNative=False, lineNumber=None, *args, **kwds):
         """
@@ -334,12 +341,15 @@ class ContentLine(VBase):
             self.singletonparams.remove('QUOTED-PRINTABLE')
         if qp:
             if 'ENCODING' in self.params:
-                self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(self.params['ENCODING'])
+                self.value = codecs.decode(self.value.encode(
+                    "utf-8"), "quoted-printable").decode(self.params['ENCODING'])
             else:
                 if 'CHARSET' in self.params:
-                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(self.params['CHARSET'][0])
+                    self.value = codecs.decode(self.value.encode(
+                        "utf-8"), "quoted-printable").decode(self.params['CHARSET'][0])
                 else:
-                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode('utf-8')
+                    self.value = codecs.decode(self.value.encode(
+                        "utf-8"), "quoted-printable").decode('utf-8')
 
     @classmethod
     def duplicate(clz, copyit):
@@ -465,6 +475,7 @@ class Component(VBase):
         A boolean flag determining whether BEGIN: and END: lines should
         be serialized.
     """
+
     def __init__(self, name=None, *args, **kwds):
         super(Component, self).__init__(*args, **kwds)
         self.contents = {}
@@ -530,7 +541,8 @@ class Component(VBase):
         except KeyError:
             raise AttributeError(name)
 
-    normal_attributes = ['contents', 'name', 'behavior', 'parentBehavior', 'group']
+    normal_attributes = ['contents', 'name',
+                         'behavior', 'parentBehavior', 'group']
 
     def __setattr__(self, name, value):
         """
@@ -649,7 +661,7 @@ class Component(VBase):
             first = [s for s in self.behavior.sortFirst if s in self.contents]
         except Exception:
             first = []
-        return first + sorted(k for k in self.contents.keys() if k not in first)
+        return first + [k for k in self.contents.keys() if k not in first]
 
     def getSortedChildren(self):
         return [obj for k in self.sortChildKeys() for obj in self.contents[k]]
@@ -742,7 +754,8 @@ patterns['qsafe_char'] = '[^"]'
 # param_value is any number of safe_chars or any number of qsaf_chars surrounded
 # by double quotes.
 
-patterns['param_value'] = ' "{qsafe_char!s} * " | {safe_char!s} * '.format(**patterns)
+patterns['param_value'] = ' "{qsafe_char!s} * " | {safe_char!s} * '.format(
+    **patterns)
 
 
 # get a tuple of two elements, one will be empty, the other will have the value
@@ -810,13 +823,15 @@ def parseLine(line, lineNumber=None):
     """
     match = line_re.match(line)
     if match is None:
-        raise ParseError("Failed to parse line: {0!s}".format(line), lineNumber)
+        raise ParseError(
+            "Failed to parse line: {0!s}".format(line), lineNumber)
     # Underscores are replaced with dash to work around Lotus Notes
     return (match.group('name').replace('_', '-'),
             parseParams(match.group('params')),
             match.group('value'), match.group('group'))
 
 # logical line regular expressions
+
 
 patterns['lineend'] = r'(?:\r\n|\r|\n|$)'
 patterns['wrap'] = r'{lineend!s} [\t ]'.format(**patterns)
@@ -1095,7 +1110,8 @@ def readComponents(streamOrString, validate=False, transform=True,
                         msg = "Skipped line {lineNumber}, message: {msg}"
                     else:
                         msg = "Skipped a line, message: {msg}"
-                    logger.error(msg.format(**{'lineNumber': e.lineNumber, 'msg': str(e)}))
+                    logger.error(msg.format(
+                        **{'lineNumber': e.lineNumber, 'msg': str(e)}))
                     continue
             else:
                 vline = textLineToContentLine(line, n)
